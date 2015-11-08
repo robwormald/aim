@@ -4,6 +4,7 @@ import {createServer} from 'http';
 import * as express from 'express';
 import * as fs from 'fs';
 import 'es6-shim';
+import * as fc from 'd3fc';
 
 var cors = require('cors');
 
@@ -51,9 +52,9 @@ const createRxSocket = (connection) => {
   let messageObserver:any = {
     next(message){
       if(connection.readyState === 1){
-        connection.send(JSON.stringify(message));        
+        connection.send(JSON.stringify(message));
       }
-     }
+    }
   }
   connection.on('close', () => {
     connection.streams && connection.streams.forEach(s => s.unsubscribe());
@@ -81,15 +82,18 @@ let messageEvents$ = connections.flatMap(connection => connection.map(message =>
 let [subs, unsubs] = messageEvents$.partition(({message:{type}}:any) => type === 'sub');
 
 subs.subscribe(({connection, message:{symbol}}:any) => {
-  const source = Observable.interval(500).map(() => ({
-    symbol,
-    price: Math.random() * 100,
-    timestamp: Date.now()
-  }));
+  const generator = fc.data.random.financial()
+    .filter(null);
+  const source = Observable.interval(500)
+    .map(() => {
+      const tick = generator(1)[0];
+      tick.symbol = symbol;
+      return tick;
+    });
   connection.streams = connection.streams || {};
   connection.streams[symbol] = source.subscribe(connection);
 });
-  
+
 unsubs.subscribe(({ connection, message:{symbol}}:any) => {
   connection.streams && connection.streams[symbol].unsubscribe();
 });

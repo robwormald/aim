@@ -17,3 +17,7 @@
 .navbar-text.RETRYING {
   color: gold;
 }
+
+stock-graph {
+  height: 150px;
+}
