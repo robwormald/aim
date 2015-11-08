@@ -6,7 +6,9 @@ const dayInMs = 24 * 60 * 60 * 1000;
 export default function() {
 
   const gridlines = fc.annotation.gridline()
-    .yTicks(5);
+    .yTicks(5)
+    .xKey(fc.util.fn.identity)
+    .yKey(fc.util.fn.identity);
 
   const candlestick = fc.series.candlestick()
     .key(function(d) { return d.date; });
@@ -41,9 +43,8 @@ export default function() {
         .yNice();
 
       d3.select(this)
-        // currently no transition because gridlines animate like ass (d3fc #752)
-        // .transition()
-        // .duration(500)
+        .transition()
+        .duration(500)
         .call(chart);
 
     });
